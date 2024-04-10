@@ -626,6 +626,21 @@ An Amazon EBS volume is a durable, block-level storage device that you can attac
   - Use instance storage for in-process data, noncritical logs, and transient application state.
   - Use S3 for data shared between systems like input datasets and processed results, or for static data needed by each new system when launched.
 
+### Instance Store:
+- Because Instance Store has a very high IOPS rate. So while an Instance Store can't provide data persistence, it can provide much higher IOPS compared to network attached storage like EBS. [Amazon EC2 instance store](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/InstanceStorage.html)
+- Not every instance types support Instance store
+- Commands for checking whcich instance types support Instance store:
+```
+aws ec2 describe-instance-types \               
+    --filters "Name=instance-type,Values=*" "Name=instance-storage-supported,Values=true" \
+    --query "InstanceTypes[].[InstanceType, InstanceStorageInfo.TotalSizeInGB]" \
+    --output table
+```
+- When Instance is rebooted, the data in instance store persists
+- When Instance is stopped / hibernated / terminated, the data in instance store does not persist.
+- When instance type is changed, the data does not persist.
+- The `number`, `size`, and `type` of instance store volumes are determined by the instance type and instance size.
+
 ### EBS Encryption:
 - EBS encryption offers a straight-forward encryption solution for EBS resources that doesn't require you to build, maintain, and secure your own key management infrastructure.
 - It uses AWS Key Management Service (AWS KMS) customer master keys (CMK) when creating encrypted volumes and snapshots. 
@@ -1170,6 +1185,31 @@ AWS Auto Scaling lets you build scaling plans that automate how groups of differ
 - Auto Scaling allows you to suspend and then resume one or more of the Auto Scaling processes in your Auto Scaling Group. This can be very useful when you want to investigate a problem in your application without triggering the Auto Scaling process when making changes.
 - You can specify your launch configuration with multiple Auto Scaling groups. However, you can only specify one launch configuration for an Auto Scaling group at a time.
 - You cannot modify a launch configuration after you've created it. If you want to change the launch configuration for an Auto Scaling group, you must create a new launch configuration and update your Auto Scaling group to inherit this new launch configuration.
+- If you updated the auto scaling group and using a new launch template / launch configuration. The Auto Scaling group won't automatic terminate existing instance and re-create new instances with new launch template / launch configurations. You can trigger the re-create process by manual terminate the existing instances.
+
+### Auto Scaling policies
+- Dynamic scaling polices:
+  - There are 2 types of Dynamic Scaling polices:
+  - **Target Tracking Scaling**: automatically scales the capacity of your Auto Scaling group based on a target metric value.
+  - For example: I want to keep the average ASG CPU to stay at around 40%
+  - **Step and simple scaling**: scale the capacity of your Auto Scaling group in predefined increments based on CloudWatch alarms. You can define separate scaling policies to handle scaling out (increasing capacity) and scaling in (decreasing capacity) when an alarm threshold is breached. 
+  - Simple scaling policies are similar to step scaling policies, except they're based on a single scaling adjustment, with a cooldown period between each scaling activity.
+  - Example: 
+    - When a CloudWatch alarm is triggered (example CPU > 70%), then add 2 units
+    - When a CloudWatch alram is triggered (example CPU < 30%), then remove 1
+- Scheduled Scaling
+  - Anticipate a scaling based on known usage pattern
+  - Example: increase the min capacity to 10 at 5pm on Friday
+- Predictive scaling: continuously forcast load and schedule scaling ahead.
+- Good metrics to scale on
+- **CPUUtilization**, **RequestCountPerTarget**, **Average Network In / Out**, Any custom metric that you push using Cloudwatch
+
+### Auto Scaling Cooldowns
+- After a scaling activity happens, you are in the cooldown period(default: 300s)
+- During the cooldown period, the ASG will not launch or terminate additional instance(to allow for metrics to stablize)
+- Advice: Use a ready-to-use AMI to reduce configuration time in order to be serving request faster and reduce the cooldown period.
+
+
 
 ### Auto Scaling Default Termination Policy:
 - The default termination policy for an Auto Scaling Group is to automatically terminate a stopped instance, so unless you've configured it to do otherwise, stopping an instance will result in termination regardless if you wanted that to happen or not. A new instance will be spun up in its place. 
@@ -1181,6 +1221,16 @@ AWS Auto Scaling lets you build scaling plans that automate how groups of differ
 - This flow chart can provide further clarity on how the default Auto Scaling policy decides which instances to delete:
 
 ![Screen Shot 2020-06-19 at 5 19 02 PM](https://user-images.githubusercontent.com/13093517/85180270-0093c200-b251-11ea-97e3-ed9a80ee5d65.png)
+
+- Deleting the Auto Scaling group will terminate all instances in the group. 
+
+### Launch templates
+- When you create a auto scaling group, you need a launch template or Launch configuration(AWS suggests you use Launch templates)
+- A launch template is similar to a launch configuration, in that it specifies instance configuration information. It includes the ID of the Amazon Machine Image (AMI), the instance type, a key pair, security groups, and other parameters used to launch EC2 instances. 
+- However, defining a launch template instead of a launch configuration allows you to have multiple versions of a launch template.
+- When you modify a launch template, you are **creating** a new version of launch template. You cannot overwrite the current a launch templates.
+- When you created a new version of launch template, you should update the auto scaling with using the newer version of launch template.
+
 
 ## Auto Scaling Cooldown Period:
 - The cooldown period is a configurable setting for your Auto Scaling Group that helps to ensure that it doesn't launch or terminate additional instances before the previous scaling activity takes effect. 
@@ -1333,6 +1383,11 @@ VPC lets you provision a logically isolated section of the AWS cloud where you c
   5. Once the VPN connection is available, set up the VPN either on the customer gateway or the on-prem firewall itself
 - Data flow into AWS via DirectConnect looks like the following: On-prem router -> dedicated line -> your own cage / DMZ -> cross connect line -> AWS Direct Connect Router -> AWS backbone -> AWS Cloud
 - **Summary**: DirectConnect connects your *on-prem with your VPC* through a non-public tunnel.
+
+#### AWS Direct Connect virtual interfaces
+- Private virtual interface: A private virtual interface should be used to access an Amazon VPC using private IP addresses.
+- Public virtual interface: A public virtual interface can access all AWS public services using public IP addresses.
+- Transit virtual interface: A transit virtual interface should be used to access one or more Amazon VPC Transit Gateways associated with Direct Connect gateways. You can use transit virtual interfaces with any AWS Direct Connect dedicated or hosted connection of any speed. For information about Direct Connect gateway configurations, see Direct Connect gateways.
 
 
 ### VPC Endpoints:
@@ -1500,6 +1555,7 @@ AWS Lambda lets you run code without provisioning or managing servers. You pay o
 ### Lambda Key Details:
 - Lambda is a compute service where you upload your code as a function and AWS provisions the necessary details underneath the function so that the function executes successfully. 
 - AWS Lambda is the ultimate abstraction layer. You only worry about code, AWS does everything else.
+- A Lambda function always runs inside a VPC owned by the Lambda service.
 - Lambda supports Go, Python, C#, PowerShell, Node.js, and Java
 - Each Lambda function maps to one request. Lambda scales horizontally automatically.
 - Lambda is priced on the number of requests and the first one million are free. Each million afterwards is $0.20.
@@ -1562,6 +1618,16 @@ API Gateway is a fully managed service for developers that makes it easy to buil
   - Calls to the API Gateway API to create, modify, delete, or deploy REST APIs. These are logged in CloudTrail.
   - API calls set up by the developers to deliver their custom functionality: These are not logged in CloudTrail.
 
+### Access control
+- API Gateway Lambda authorizers: 
+  - A Lambda authorizer (formerly known as a custom authorizer) is an API Gateway feature that uses a Lambda function to control access to your API.
+  - A Lambda authorizer is useful if you want to implement a custom authorization scheme that uses a bearer token authentication strategy such as OAuth or SAML, or that uses request parameters to determine the caller's identity.
+  - When a client makes a request to one of your API's methods, API Gateway calls your Lambda authorizer, which takes the caller's identity as input and returns an IAM policy as output.
+  - If you have an existing Identity Provider (IdP), you can use an AWS Lambda authorizer for Amazon API Gateway to invoke a Lambda function to authenticate/validate a given user against your Identity Provider. You can use a Lambda authorizer for custom validation logic based on identity metadata.
+  ![alt text](https://docs.aws.amazon.com/images/apigateway/latest/developerguide/images/custom-auth-workflow.png)
+  - [Use API Gateway Lambda authorizers](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html)
+  - This is not built-in user management.
+
 
 ### Cross Origin Resource Sharing:
 - In computing, the same-origin policy is an important concept where a web browser permits scripts contained in one page to access data from another page, but only if both pages have the same origin.
@@ -1620,6 +1686,10 @@ AWS Organizations is an account management service that enables you to consolida
 - With AWS Organizations, we can enable or disable services using Service Control Policies (SCPs) broadly on organizational units or more specifically on individual accounts
 - Use SCPs with AWS Organizations to establish access controls so that all IAM principals (users and roles) adhere to them. With SCPs, you can specify *Conditions*, *Resources*, and *NotAction* to deny access across accounts in your organization or organizational unit. For example, you can use SCPs to restrict access to specific AWS Regions, or prevent deleting common resources, such as an IAM role used for your central administrators.
 
+## AWS Certificate Manager(ACM)
+- Any SSL/TLS certificates created via ACM do not need any monitoring/intervention for expiration. ACM automatically renews such certificates.
+- But (ACM) does not attempt to renew third-party certificates that are imported.
+
 ## Miscellaneous
 
 The following section includes services, features, and techniques that may appear on the exam. They are also extremely useful to know as an engineer using AWS. If the following items do appear on the exam, they will not be tested in detail. You'll just have to know what the meaning is behind the name. It is a great idea to learn each item in depth for your career's benefit, but it is not necessary for the exam.
@@ -1630,7 +1700,7 @@ The following section includes services, features, and techniques that may appea
 - Once authenticated into an identity provider (say with Facebook as an example), the provider supplies an auth token. This auth token is then supplied to Cognito which responds with limited access to your AWS environment. You dictate how limited you would like this access to be in the IAM role.
 - Cognito's job is broker between your app and legitimate authenticators.
 - *Cognito User Pools* are user directories that are used for sign-up and sign-in functionality on your application. Successful authentication generates a JSON web token. Remember user pools to be user based. It handles registration, recovery, and authentication.
-- *Cognito Identity Pools* are used to allow users temp access to direct AWS Services like S3 or DynamoDB. Identity pools actually go in and grant you the IAM role.
+- *Cognito Identity Pools* are used to allow users temp access to direct AWS Services like S3 or DynamoDB. Identity pools actually go in and grant you the IAM role. Identity pools aren't an authentication mechanism in themselves
 - SAML-based authentication can be used to allow AWS Management Console login for non-IAM users.
 - In particular, you can use Microsoft Active Directory which implements Security Assertion Markup Language (SAML) as well.
 - You can use Amazon Cognito to deliver temporary, limited-privilege credentials to your application so that your users can access AWS resources. 
