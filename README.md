@@ -1833,7 +1833,8 @@ The following section includes services, features, and techniques that may appea
 - AWS Config is a service that enables you to assess, audit, and evaluate the configurations of your AWS resources. Config continuously monitors and records your AWS resource configurations and allows you to automate the evaluation of recorded configurations against desired configurations.
 - With Config, you can review changes in configurations and relationships between AWS resources, dive into detailed resource configuration histories, and determine your overall compliance against the configurations specified in your internal guidelines. This enables you to simplify compliance auditing, security analysis, change management, and operational troubleshooting.
 - AWS Config allows you to do the following: ·        
-  - Evaluate your AWS resource configurations for desired settings. ·         
+  - Evaluate your AWS resource configurations for desired settings.
+  - Configure AWS Config to stream configuration changes and notifications to an Amazon SNS topic. For example, when a resource is updated, you can get a notification sent to your email, so that you can view the changes. You can also be notified when AWS Config evaluates your custom or managed rules against your resources. ·         
   - Get a snapshot of the current configurations of the supported resources that are associated with your AWS account. ·        
   - Retrieve configurations of one or more resources that exist in your account. ·       
   - Retrieve historical configurations of one or more resources. ·     
