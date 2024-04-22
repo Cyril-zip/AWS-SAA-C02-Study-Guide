@@ -241,6 +241,7 @@ This makes it a perfect candidate to host files or directories and a poor candid
 Data uploaded into S3 is spread across multiple files and facilities. The files uploaded into S3 have an upper-bound of 5TB per file and the number of files that can be uploaded is virtually limitless. S3 buckets, which contain all files, are named in a universal namespace so uniqueness is required. All successful uploads will return an HTTP 200 response.
 
 ### S3 Key Details:
+- Amazon S3 delivers strong read-after-write consistency automatically, all Amazon S3 GET, PUT, and LIST operations, as well as operations that change object tags, ACLs, or metadata, are strongly consistent. What you write is what you will read, and the results of a LIST will be an accurate reflection of what’s in the bucket. Strong read-after-write consistency when you often read and list immediately after writing objects.
 - Objects (regular files or directories) are stored in S3 with a key, value, version ID, and metadata. They can also contain torrents and sub resources for access control lists which are basically permissions for the object itself.
 - The data consistency model for S3 ensures immediate read access for new objects after the initial PUT requests. These new objects are introduced into AWS for the first time and thus do not need to be updated anywhere so they are available immediately.
 - The data consistency model for S3 also ensures immediate read access for PUTS and DELETES of already existing objects, <a href="https://aws.amazon.com/fr/about-aws/whats-new/2020/12/amazon-s3-now-delivers-strong-read-after-write-consistency-automatically-for-all-applications/">since Decembre 2020</a>.
@@ -303,6 +304,7 @@ Data uploaded into S3 is spread across multiple files and facilities. The files 
     Bulk: 5 - 12 hours. This option has the lowest cost and is good for a large set of data.
 
 The Expedited duration listed above could possibly be longer during rare situations of unusually high demand across all of AWS. If it is absolutely critical to have quick access to your Glacier data under all circumstances, you must purchase *Provisioned Capacity*. Provisioned Capacity guarantees that Expedited retrievals always work within the time constraints of 1 to 5 minutes.
+- Remarks: You can't directly copy data from AWS Snowball Edge devices into Amazon S3 Glacier.
 
 **S3 Deep Glacier** - The lowest cost S3 storage where retrieval can take 12 hours.
 
@@ -515,6 +517,9 @@ EC2 spins up resizable server instances that can scale up and down quickly. An i
 - **Convertible Reserved Instances** are instances that are discounted at 54% off of On-Demand instances, but you can also modify the instance type at any point. For example, you suspect that after a few months your VM might need to change from general purpose to memory optimized, but you aren't sure just yet. So if you think that in the future you might need to change your VM type or upgrade your VMs capacity, choose Convertible Reserved Instances. There is no downgrading instance type with this option though.
 - **Scheduled Reserved Instances** are reserved according to a specified timeline that you set. For example, you might use Scheduled Reserved Instances if you run education software that only needs to be available during school hours. This option allows you to better match your needed capacity with a recurring schedule so that you can save money.
 
+### User data
+- By default, scripts entered as user data are executed with root user privileges
+- By default, user data runs only during the boot cycle when you first launch an instance
 
 ### EC2 Instance Lifecycle:
 The following table highlights the many instance states that a VM can be in at a given time. 
@@ -765,6 +770,8 @@ Within the storage and content delivery domains, CloudWatch can inform you about
 - CloudWatch alarms send notifications or automatically make changes to the resources you are monitoring based on rules that you define. 
 - For example, you can create custom CloudWatch alarms which will trigger notifications such as surpassing a set billing threshold.
 - CloudWatch alarms have two states of either `ok` or `alarm`
+- Using Amazon CloudWatch alarm actions, you can create alarms that automatically stop, terminate, reboot, or recover your EC2 instances. You can use the stop or terminate actions to help you save money when you no longer need an instance to be running. You can use the reboot and recover actions to automatically reboot those instances or recover them onto new hardware if a system impairment occurs.
+- For Amazon CloudWatch alarm actions, we can trigger Notification(send events to SNS), Lambda actions(Trigger Lambda function), Auto Scaling action, EC2 Action(recover, stop, terminate and reboot the instance).
 
 ### CloudWatch Metrics:
 - CloudWatch Metrics represent a time-ordered set of data points.
@@ -831,6 +838,7 @@ Amazon FSx for Windows File Server provides a fully managed native Microsoft Fil
 - FSx for Windows support daily automated backups and admins in taking backups when needed as well.
 - FSx for Windows removes duplicated content and compresses common content
 - By default, all data is encrypted at rest.
+- FSx for Windows does not allow you to present S3 objects as files and does not allow you to write changed data back to S3.
 
 ## Amazon FSx for Lustre
 
@@ -841,6 +849,9 @@ Amazon FSx for Lustre makes it easy and cost effective to launch and run the ope
 - FSx for Lustre is compatible with the most popular Linux-based AMIs, including Amazon Linux, Amazon Linux 2, Red Hat Enterprise Linux (RHEL), CentOS, SUSE Linux and Ubuntu.
 - Since the Lustre file system is designed for high-performance computing workloads that typically run on compute clusters, choose EFS for normal Linux file system if your requirements don't match this use case.
 - FSx Lustre has the ability to store and retrieve data directly on S3 on its own.
+- FSx for Lustre file system transparently presents S3 objects as files and allows you to write changed data back to S3.
+- FSx for Lustre provides the ability to both process the 'hot data' in a parallel and distributed fashion as well as easily store the 'cold data' on Amazon S3. 
+
 
 ## Relational Database Service (RDS)
 
@@ -1689,6 +1700,9 @@ AWS Organizations is an account management service that enables you to consolida
 ## AWS Certificate Manager(ACM)
 - Any SSL/TLS certificates created via ACM do not need any monitoring/intervention for expiration. ACM automatically renews such certificates.
 - But (ACM) does not attempt to renew third-party certificates that are imported.
+- Amazon CloudWatch metrics and Amazon EventBridge events are enabled for all certificates that are managed by ACM. 
+- Users can monitor `days to expiry` as a metric for ACM certificates through Amazon CloudWatch. An Amazon EventBridge expiry event is published for any certificate that is at least 45 days away from expiry by default. Users can build alarms to monitor certificates based on days to expiry and also trigger custom actions such as calling a Lambda function or paging an administrator. 
+- But the easiest way to monitor certificate expiry and trigger an alert is to leverage AWS Config managed rule to check if any third-party SSL/TLS certificates imported into ACM are marked for expiration within 30 days. Configure the rule to trigger an Amazon SNS notification to the security team if any certificate expires within 30 days 
 
 ## Miscellaneous
 
@@ -1840,3 +1854,14 @@ The following section includes services, features, and techniques that may appea
   - Retrieve historical configurations of one or more resources. ·     
   - Receive a notification whenever a resource is created, modified, or deleted.     
   - View relationships between resources. For example, you might want to find all resources that use a particular security group.
+
+### What is AWS CloudHub?
+- If you have multiple AWS Site-to-Site VPN connections, you can provide secure communication between sites using the AWS VPN CloudHub. 
+- This enables your remote sites to communicate with each other, and **not just with the VPC** . 
+- Sites that use AWS Direct Connect connections to the virtual private gateway can also be part of the AWS VPN CloudHub. 
+- The VPN CloudHub operates on a simple hub-and-spoke model that you can use with or without a VPC. 
+- This design is suitable if you have multiple branch offices and existing internet connections and would like to implement a convenient, potentially low-cost hub-and-spoke model for primary or backup connectivity between these remote offices.
+
+#### Cloudhub vs Transit gateway
+- CloudHub - Router for various VPC and On Prem solutions using BGP
+- Transit Gateway - Also a router but Strictly over AWS Backbone
