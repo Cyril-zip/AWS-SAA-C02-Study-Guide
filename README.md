@@ -1146,6 +1146,7 @@ When an EC2 instance behind an ELB fails a health check, the ELB stops sending t
   7. The browser receives the HTML file it requested and renders the graphical representation of it on the screen.
 - Load balancers are a regional service. They do not balance load across different regions. You must provision a new ELB in each region that you operate out of.
 - If your application stops responding, you’ll receive a 504 error when hitting your load balancer. This means the application is having issues and the error could have bubbled up to the load balancer from the services behind it. It does not necessarily mean there's a problem with the LB itself.
+- Elastic Load Balancer **cannot** throttle requests(rate limiting)
 
 ### ELB Advanced Features:
 - To enable IPv6 DNS resolution, you need to create a second DNS resource record so that the **ALIAS AAAA** record resolves to the load balancer along with the IPv4 record.
