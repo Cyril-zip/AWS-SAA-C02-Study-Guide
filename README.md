@@ -77,11 +77,13 @@ If at any point you find yourself feeling uncertain of your progress and in need
 
 32. <a href="#cloudformation">CloudFormation </a>
 
-33. <a href="#cloudformation">ElasticBeanstalk</a>
+33. <a href="#ElasticBeanstalk">ElasticBeanstalk</a>
 
-34. <a href="#aws-organizations">AWS Organizations</a>
+34. <a href="#AWS-Machine-learning">AWS Machine learning</a>
 
-35. <a href="#miscellaneous">Miscellaneous</a>
+35. <a href="#aws-organizations">AWS Organizations</a>
+
+36. <a href="#miscellaneous">Miscellaneous</a>
 
 
 
@@ -926,6 +928,8 @@ DB instances that are encrypted can't be modified to disable encryption.
 - By default, Enhanced Monitoring metrics are stored in the CloudWatch Logs for 30 days. To modify the amount of time the metrics are stored in the CloudWatch Logs, change the retention for the RDS OS Metrics log group in the CloudWatch console.
 - Take note that there are key differences between CloudWatch and Enhanced Monitoring Metrics. CloudWatch gathers metrics about CPU utilization from the hypervisor for a DB instance, and Enhanced Monitoring gathers its metrics from an agent on the instance. As a result, you might find differences between the measurements, because the hypervisor layer performs a small amount of work that can be picked up and interpreted as part of the metric.
 
+### RDS Proxy
+- RDS Proxy is never publicly accessible.
 ## Aurora
 
 ### Aurora Simplified:
@@ -1567,7 +1571,8 @@ AWS Lambda lets you run code without provisioning or managing servers. You pay o
 ### Lambda Key Details:
 - Lambda is a compute service where you upload your code as a function and AWS provisions the necessary details underneath the function so that the function executes successfully. 
 - AWS Lambda is the ultimate abstraction layer. You only worry about code, AWS does everything else.
-- A Lambda function always runs inside a VPC owned by the Lambda service.
+- By default, A Lambda function is launched **outside** your own VPC(in an AWS-owned VPC), so it cannot access resources in your VPC.
+- You can specify your lambda in your VPC and define your subnets and security group.(Lambda will create an ENI in your subnet)
 - Lambda supports Go, Python, C#, PowerShell, Node.js, and Java
 - Each Lambda function maps to one request. Lambda scales horizontally automatically.
 - Lambda is priced on the number of requests and the first one million are free. Each million afterwards is $0.20.
