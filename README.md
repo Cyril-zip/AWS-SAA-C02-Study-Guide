@@ -77,9 +77,9 @@ If at any point you find yourself feeling uncertain of your progress and in need
 
 32. <a href="#cloudformation">CloudFormation </a>
 
-33. <a href="#ElasticBeanstalk">ElasticBeanstalk</a>
+33. <a href="#elasticbeanstalk">ElasticBeanstalk</a>
 
-34. <a href="#AWS-Machine-learning">AWS Machine learning</a>
+34. <a href="#aws-machine-learning">AWS machine learning</a>
 
 35. <a href="#aws-organizations">AWS Organizations</a>
 
@@ -1689,6 +1689,106 @@ ElasticBeanstalk is another way to script out your provisioning process by deplo
 - ElasticBeanstalk has capacity provisioning, meaning you can use it with autoscaling from the get-go.
 ElasticBeanstalk applies updates to your application by having a duplicate ready with the already updated version. This duplicate is then swapped with the original. This is done as a preventative measure in case your updated application fails. If the app does fail, ElasticBeanstalk will switch back to the original copy with the older version and there will be no downtime experienced by the users who are using your application. 
 - You can use ElasticBeanstalk to even host Docker as Elastic Beanstalk supports the deployment of web applications from containers. With Docker containers, you can define your own runtime environment, your own platform, programming language, and any application dependencies (such as package managers or tools) that aren't supported by other platforms. ElasticBeanstalk makes it easy to deploy Docker as Docker containers are already self-contained and include all the configuration information and software required to run. 
+
+## AWS machine learning
+### AWS Machine learning Simplified:
+
+### Amazon Rekognition
+- Find objects, people, text, scenes in images and videos using ML
+- Facial analysis and facial search to do user verification, people counting
+- Create a database of "familiar faces" or compare against celebrities
+- User cases
+  - Labeling
+  - Content Moderation
+  - Text Detection
+  - Face Detection and analysis (gender, age, range, emotions)
+  - Face Search and Verifications
+  - Celebrity Recongnition
+  - Pathing(for sports game analysis)
+- Content Moderation
+  - Detect inappropriate, unwanted or offensive content
+  - Used in social media, broadcast media, advertising, and e-commerce situations to create safer user experience
+  - Set a minimum confidence threshold for items that will be flagged
+  - Flag sensitive content for manual review in Amazon Augmented AI(A2I)
+  - Help comply with regulations
+
+### Amazon Transcribe
+- Automatically convert speech to text
+- Uses a deep learning process called automatic speech recognition to convent speech to text quickly and accurately
+- Automatically remove Personally Identifiable information(PII) using Redaction
+- Supports Automatic Language Identification for multi-lingual audio
+
+### Amazon Polly
+- Convert text into lifelike speech using deep learning
+- Allowing you to create application that talk
+
+#### Amazon Polly - Lexicon & SSML
+- Customize the pronunciation of words with **Pronunciation lexicons**
+  - Sytlized words: St3ph4ne => Stephane
+  - Acronyms: AWS => Amazon Web Services
+- Upload the lexicons and use them in the SynthesizeSpeech operation
+- Generate speech from plain text or from documents marked up with Speech Synthesise Markup Language(SSML), add customization to the speech
+  - emphasizing specific words or phrases
+  - using phonetic pronunication
+  - including breathing sounds, whispering
+
+### Amazon Translate
+- Natural and accurate language translation
+- Amazon Translate allows you to localize content
+
+### Amazon Lex & Connect
+#### Amazon Lex(Same technology that power Alexa)
+- Automatic Speech Recongnition (ASR) to convent speech to text
+- Natural Language Understanding to recognize the intent of text, callers
+- Helps build chatbots, call center bots
+
+#### Amazon Connect:
+- Receive calls, create content flow, cloud-based virtual contact center
+- Can integrate with other CRM systems or AWS
+- No upfront payments, 80% cheaper than traditional contact center solutions
+
+### Amazon Comprehend
+- For Natural Language Processing - NLP
+- Fully managed and serverless service
+- Uses Machine learning to find insights and relationships in text
+  - extract key phrases, place, people
+  - understand how positive and negative the text is
+  - analysis text using tokenization and part of speech
+  - automatically organizes a collection of text 
+
+### Amazon Comprehend Medical
+- Amazon Comprehend Medical detects and returns useful information in unstructured clinical text:
+  - Physician's notes
+  - Discharge summaries
+  - Test results
+  - Case notes
+- Uses NLP to detect Protected Health Information(PHI) - DetectPHI API
+
+### Amazon SageMaker
+- Fully managed service for developers / data scientists to build ML model
+- Typically difficult to do all the processes in one place + provision servers
+- Develope Machine learning process in one place
+
+### Amazon Forecast
+- Fully managed service that uses ML to delivery highly accurate forecasts
+- Example: predict the future sales of a raincoat
+- 50% more accurate than looking at the data itself
+- Reduce forecasting time from months to hours
+- Use cases: Product Demand planning
+
+### Amazon Kendra
+- Fully managed document search service powered by Machine Learning
+- Extract answers from documents
+- Natural language search capabilites
+- Learn from user interactions and feedback
+- Ability to manually fine-tune search result
+
+### Amazon Personalize
+- Fully managed ML-service to build apps with real-time personalized recommendations
+- Integrates into extsting websites, applications, SMS, email marketing system
+
+### Amazon Textract
+- OCR - Automatically extract text, handwriting and data frm any scanned documents using AI and ML
 
 ## AWS Organizations
 
