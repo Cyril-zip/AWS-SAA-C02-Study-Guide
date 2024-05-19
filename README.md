@@ -1329,6 +1329,7 @@ VPC lets you provision a logically isolated section of the AWS cloud where you c
 
 
 ### NAT Instances vs. NAT Gateways:
+[AWS-Compare NAT gateways and NAT instances](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-comparison.html)
 - Attaching an Internet Gateway to a VPC allows instances with public IPs to directly access the internet. NAT does a similar thing, however it is for instances that do not have a public IP. It serves as an intermediate step which allow private instances to first mask their own private IP as the NAT's public IP before accessing the internet.
 - You would want your private instances to access the internet so that they can have normal software updates. NAT prevents any initiating of a connection from the internet.
 - **NAT instances** are individual EC2 instances that perform the function of providing private subnets a means to securely access the internet. 
@@ -1439,6 +1440,10 @@ VPC lets you provision a logically isolated section of the AWS cloud where you c
   - Edge to Edge Routing through a gateway or connection device (VPN connection, Internet Gateway, AWS Direct Connect connection, etc.)
 - You can peer across regions, but you cannot have one subnet stretched over multiple availability zones. However, you can have multiple subnets in the same availability zone.  
 - **Summary**: VPC Peering connects your *VPC to another VPC* through a non-public tunnel.
+
+### VPC sharing
+- VPC sharing allows multiple AWS accounts to create their application resources such as EC2 instance, RDS databases, redshift clusters and AWS Lambda functions into shared and centrally managed VPCs. 
+- - VPC sharing, an account that owns the VPC shares one or more subnets with other accounts that belong to the same organization from AWS organizations. The owner account **cannot** share the VPC itself.
 
 ### VPC Flow Logs:
 - VPC Flow Logs is a feature that captures the IP information for all traffic flowing into and out of your VPC. Flow log data is sent to an S3 bucket or CloudWatch where you can view, retrieve, and manipulate this data. 
