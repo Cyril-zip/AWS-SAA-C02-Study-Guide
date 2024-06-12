@@ -349,6 +349,10 @@ You can encrypt on the AWS supported server-side in the following ways:
 - Transfer acceleration makes use of the CloudFront network by sending or receiving data at CDN points of presence (called edge locations) rather than slower uploads or downloads at the origin.
 - This is accomplished by uploading to a distinct URL for the edge location instead of the bucket itself. This is then transferred over the AWS network backbone at a much faster speed.
 - <a href="https://s3-accelerate-speedtest.s3-accelerate.amazonaws.com/en/accelerate-speed-comparsion.html">You can test transfer acceleration speed directly in comparison to regular uploads.</a>
+- With S3TA, you pay only for transfers that are accelerated.
+
+### S3 Pricing
+- Ingress traffic refers to the data transferred into Amazon S3 from other AWS services or from the internet, and Amazon does not charge for this type of data transfer.
 
 ### S3 Event Notications:
 The Amazon S3 notification feature enables you to receive and send notifications when certain events happen in your bucket. To enable notifications, you must first configure the events you want Amazon S3 to publish (new object added, old object deleted, etc.) and the destinations where you want Amazon S3 to send the event notifications. Amazon S3 supports the following destinations where it can publish events:
@@ -583,7 +587,7 @@ The following table highlights the many instance states that a VM can be in at a
     - Only certain instances can be launched into this group (compute optimized, GPU optimized, storage optimized, and memory optimized).
   
   2.) Spread Placement Groups
-    - Spread Placement Grouping is when you put each individual EC2 instance on top of its own distinct hardware so that failure is isolated. 
+    - Spread Placement Grouping is when you put each individual EC2 instance on top of its own distinct hardware so that failure is isolated.
     - Your VMs live on separate racks, with separate network inputs and separate power requirements. Spread placement groups are recommended for applications that have a small number of critical instances that should be kept separate from each other. 
   
   3.) Partitioned Placement Groups
@@ -593,6 +597,15 @@ The following table highlights the many instance states that a VM can be in at a
   
 - Each placement group name within your AWS must be unique
 - You can move an existing instance into a placement group provided that it is in a stopped state. You can move the instance via the CLI or an AWS SDK, but not the console. You can also take a snapshot of the existing instance, convert it into an AMI, and launch it into the placement group where you desire it to be.
+
+### Amazon Machine Images(AMI)
+An Amazon Machine Image (AMI) is a supported and maintained image provided by AWS that provides the information required to launch an instance.
+
+An AMI includes the following:
+
+- One or more Amazon Elastic Block Store (Amazon EBS) snapshots, or, for instance-store-backed AMIs, a template for the root volume of the instance (for example, an operating system, an application server, and applications).
+- Launch permissions that control which AWS accounts can use the AMI to launch instances.
+- A block device mapping that specifies the volumes to attach to the instance when it's launched.
 
 ## Elastic Block Store (EBS)
 
@@ -688,6 +701,9 @@ aws ec2 describe-instance-types \
 - EBS encrypts your volume with a data key using the AES-256 algorithm. 
 - Snapshots of encrypted volumes are naturally encrypted as well. Volumes restored from encrypted snapshots are also encrypted. You can only share unencrypted snapshots.
 - The old way of encrypting a root device was to create a snapshot of a provisioned EC2 instance. While making a copy of that snapshot, you then enabled encryption during the copy's creation. Finally, once the copy was encrypted, you then created an AMI from the encrypted copy and used to have an EC2 instance with encryption on the root device. Because of how complex this is, you can now simply encrypt root devices as part of the EC2 provisioning options.
+
+### EBS pricing:
+- EBS pricing based on provisioned storage, i.e., for a provisioned storage of 100GB and the charges are \$0.10 per GB-month of provisioned storage. the monthly cost on EBS is \$0.10*100 = $10.
 
 ## Elastic Network Interfaces (ENI)
 
@@ -1167,6 +1183,7 @@ When an EC2 instance behind an ELB fails a health check, the ELB stops sending t
   - Classic LBs.
 - **Application LBs** are best suited for HTTP(S) traffic and they balance load on layer 7 OSI. They are intelligent enough to be application aware and Application Load Balancers also support path-based routing, host-based routing and support for containerized applications. As an example, if you change your web browser’s language into French, an Application LB has visibility of the metadata it receives from your browser which contains details about the language you use. To optimize your browsing experience, it will then route you to the French-language servers on the backend behind the LB. You can also create advanced request routing, moving traffic into specific servers based on rules that you set yourself for specific cases.
 - **Network LBs** are best suited for TCP traffic where performance is required and they balance load on layer 4. They are capable of managing millions of requests per second while maintaining extremely low latency.
+  - **Network LBs** does not have content-based routing(NLB for layer 4).
 - **Classic LBs** are the legacy ELB product and they balance either on HTTP(S) or TCP, but not both. Even though they are the oldest LBs, they still support features like sticky sessions and X-Forwarded-For headers.
 - If you need flexible application management and TLS termination then you should use the Application Load Balancer. If extreme performance and a static IP is needed for your application then you should use the Network Load Balancer. If your application is built within the EC2 Classic network then you should use the Classic Load Balancer.
 - The lifecycle of a request to view a website behind an ELB:
