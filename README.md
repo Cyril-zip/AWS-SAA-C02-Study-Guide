@@ -410,6 +410,35 @@ The Amazon S3 notification feature enables you to receive and send notifications
 - By reducing the volume of data that has to be loaded and processed by your applications, S3 Select can improve the performance of most applications that frequently access data from S3 by up to 400% because you’re dealing with significantly less data.
 - You can also use S3 Select for Glacier.
 
+### S3 Object lock:
+- S3 Object Lock can help prevent Amazon S3 objects from being deleted or overwritten for a fixed amount of time or indefinitely. 
+- Object lock works only in buckets that have s3 versioning enabled.
+- Object Lock uses a write-once-read-many (WORM) model to store objects.
+- You can use Object Lock to help meet regulatory requirements that require WORM storage, or to add another layer of protection against object changes or deletion.
+- There are 2 ways to manage object retention
+  - retention periods
+    - specifies a fixed period of time during which an object remains locked
+    - You can set a unique retention period for individual objects.
+    - You can set a default retention period on an S3 bucket.
+    - You **may** also restrict the minimum and maximum allowable retention periods with the `s3:object-lock-remaining-retention-days` condition key in the bucket policy.
+    - You can place a retention period explicitly on an **individual object version** or on a **bucket's properties** so that it applies to all objects in the bucket automatically.
+      - Apply retention period to an object version -> specify a Retain Until Date for the object version. S3 stores this date in the object version's metadata.
+      - Apply retention period in a bucket's properties -> specify a duration, in either days or years, for how long to protect every object version placed in the bucket. S3 calculates a Retain until Date for the object version by adding the specified duration to the object version's creation timestamp.
+    - When you PUT an object version that has an explicit individual retention mode and period in a bucket, the object version's individual Object Lock settings **override** any bucket property retention settings.
+    - Retention periods apply to **individual object versions**.
+      - E.g., Old object: 15 days into a 30-day retention period. Then you PUT a New object with the same name and a 60-day retention period.
+      - New version: 60-day retention period
+      - Old version: still 15 days into a 30-day retention period.
+    - Retention Modes:
+      - Compliance mode:
+        - No body(include root user) can overwrite / delete the object or change / shorten the retention period until the retention period.
+        - User case: Store compliant data.
+      - Covernance mode: users can't overwrite or delete an object version or alter its lock settings unless they have special permissions(`s3:BypassGovernanceRetention`), and must explicitly include x-amz-bypass-governance-retention:true as a request header.
+        - User case: Allow some users to alter the retention settings or delete the objects
+  - legal holds:
+    - A legal hold provides the same protection as a retention period, but it has **no expiration date**.
+    - Instead, a legal hold remains in place until you explicitly remove it(with permission `s3:PutObjectLegalHold`).
+    - Legal holds are **independent** from retention periods. Placing a legal hold on an object version doesn't affect the retention mode or retention period for that object version.
 
 ## CloudFront
 
@@ -1845,7 +1874,8 @@ The following section includes services, features, and techniques that may appea
 - Example use cases:
   - Query logs that are dumped into S3 buckets as an alternative or supplement to the ELK stack
   - Setting queries to run business reports based off of the data regularly entering S3
-  - Running queries on click-stream data to have further insight of customer behavior
+  - Running queries on click-stream data to have further insight of customer
+    behavior
 
 ### What is AWS Macie?
 - To understand Macie, it is important to understand PII or Personally Identifiable Information:
