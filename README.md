@@ -5,7 +5,6 @@ This study guide will help you pass the newer AWS Certified Solutions Architect 
   2. The FAQs for the most critical services, included in the recommended reading list below
   3. Tutorials Dojo's <a href="https://www.udemy.com/course/aws-certified-solutions-architect-associate-amazon-practice-exams-saa-c02/">AWS Certified Solutions Architect Associate Practice Exams </a>
   4. Andrew Brown's <a href="https://www.youtube.com/watch?v=Ia-UEYYR44s">AWS Certified Solutions Architect - Associate 2020 (PASS THE EXAM!) | Ad-Free Course
-</a> 
 
 *Notes*:
 If at any point you find yourself feeling uncertain of your progress and in need of more time, you can postpone your AWS exam date. Be sure to also keep up with the ongoing discussions in <a href="https://reddit.com/r/AWSCertifications/">r/AWSCertifications</a> as you will find relevant exam tips, studying material, and advice from other exam takers. Before experimenting with AWS, it's very important to be sure that you know what is <a href="https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc">free</a> and what isn't. Relevant Free Tier FAQs can be found <a href="https://aws.amazon.com/free/free-tier-faqs/">here</a>. Finally, Udemy often has their courses go on sale from time to time. It might be worth waiting to purchase either the Tutorial Dojo practice exam or Stephane Maarek's course depending on how urgently you need the content.
@@ -1408,13 +1407,19 @@ VPC lets you provision a logically isolated section of the AWS cloud where you c
 - Route tables can be configured to access endpoints (public services accessed privately) and not just the internet.
 
 ### Internet Gateway:
-- If the Internet Gateway is not attached to the VPC, which is the prerequisite for instances to be accessed from the internet, then naturally instances in your VPC will not be reachable. 
+- Internet gateway is a horizontally scaled, redundant, and highly available VPC component that allows communication between your VPC and the internet.
+- If the Internet Gateway is not **attached** to the VPC, which is the prerequisite for instances to be accessed from the internet, then naturally instances in your VPC will not be reachable. (Newly created Internet gateway doesn't attach to VPC, you need to attach it to VPC after create the VPC).
+- One VPC can only attach one Internet gateway.
 - If you want all of your VPC to remain private (and not just some subnets), then do not attach an IGW.
 - When a Public IP address is assigned to an EC2 instance, it is effectively registered by the Internet Gateway as a valid public endpoint. However, each instance is only aware of its private IP and not its public IP. Only the IGW knows of the public IPs that belong to instances. 
 - When an EC2 instance initiates a connection to the public internet, the request is sent using the public IP as its source even though the instance doesn't know a thing about it. This works because the IGW performs its own NAT translation where private IPs are mapped to public IPs and vice versa for traffic flowing into and out of the VPC. 
 - So when traffic from the internet is destined for an instance's public IP endpoint, the IGW receives it and forwards the traffic onto the EC2 instance using its internal private IP.
 - You can only have one IGW per VPC.
 - **Summary**: IGW connects *your VPC with the internet*.
+![](./pic/IGW_NAT.png)
+![](./pic/igw_traffic_from_internet.png)
+![](./pic/igw_traffic_to_internet.png)
+
 
 ### Virtual Private Networks (VPNs):
 - VPCs can also serve as a bridge between your corporate data center and the AWS cloud. With a VPC Virtual Private Network (VPN), your VPC becomes an extension of your on-prem environment.
@@ -1596,6 +1601,7 @@ Amazon Kinesis makes it easy to collect, process, and analyze real-time, streami
     - Kinesis Streams can continuously capture and store terabytes of data per hour from hundreds of thousands of sources such as website clickstreams, financial 
       transactions, social media feeds, IT logs, and location-tracking events. For example: purchase requests from a large online store like Amazon, stock prices, Netflix 
       content, Twitch content, online gaming data, Uber positioning and directions, etc.
+    - Kinesis supports data replay by consumer. Assuming that the records are still within their retention period you’d need to recreate the ESM with whatever timestamp you wanted to replay from or at trim horizon if you wanted to get everything in the stream.
       
   - Kinesis Firehose
     - Amazon Kinesis Firehose is the easiest way to load streaming data into data stores and analytics tools. When data is streamed into Kinesis Firehose, there is no 
@@ -1603,16 +1609,24 @@ Amazon Kinesis makes it easy to collect, process, and analyze real-time, streami
       processed, you send the data elsewhere.
     - Kinesis Firehose can capture, transform, and load streaming data into Amazon S3, Amazon Redshift, Amazon Elasticsearch Service, and Splunk, enabling near real-time 
       analytics with existing business intelligence tools and dashboards you’re already using today.
+    - Kinesis data firehose supports batching by timeframe and payload size.(e.g., all data every 5 mins or reach 5MB data)
+    ![](./pic/data_firehose.png)
       
   - Kinesis Analytics
+    - based on apache Flink
     - Kinesis Analytics works with both Kinesis Streams and Kinesis Firehose and can analyze data on the fly. The data within Kinesis Analytics also gets sent elsewhere once 
       it is finished processing. It analyzes your data inside of the Kinesis service itself.
 
-- Partition keys are used with Kinesis so you can organize data by shard. This way, input from a particular device can be assigned a key that will limit its destination to a specific shard.
-- Partition keys are useful if you would like to maintain order within your shard.
-- Consumers, or the EC2 instances that read from Kinesis Streams, can go inside the shards to analyze what is in there. Once finished analyzing or parsing the data, the consumers can then pass on the data to a number of places for storage like a DB or S3.
-- The total capacity of a Kinesis stream is the sum of data within its constituent shards.
-- You can always increase the write capacity assigned to your shard table.
+    - Partition keys are used with Kinesis so you can organize data by shard. This way, input from a particular device can be assigned a key that will limit its destination to a specific shard.
+    - Partition keys are useful if you would like to maintain order within your shard.
+    - Consumers, or the EC2 instances that read from Kinesis Streams, can go inside the shards to analyze what is in there. Once finished analyzing or parsing the data, the consumers can then pass on the data to a number of places for storage like a DB or S3.
+    - The total capacity of a Kinesis stream is the sum of data within its constituent shards.
+    - You can always increase the write capacity assigned to your shard table.
+    - Features:
+      - dynamic data joins: delay process until other related data come in
+      - Time window analysis: Example: for every 5 mins, I want to see my top leaderboards
+      - Late arriving data: handle delay receive data, like a click event but failed to send
+      ![](./pic/data_analytics_big_pictures.png)
 
 ## Lambda
 
@@ -2023,3 +2037,19 @@ The following section includes services, features, and techniques that may appea
 #### Cloudhub vs Transit gateway
 - CloudHub - Router for various VPC and On Prem solutions using BGP
 - Transit Gateway - Also a router but Strictly over AWS Backbone
+
+#### SNS , SQS , EventBridge vs Kinesis
+SNS:
+- As an event coordinator with distributed application looking for a pub sub 
+- SNS vs Kinesis: 
+  - Kinesis has timeline so it can rollback to a certain time and send out the events at that time
+  - SNS doesn't have this concept, once it receives the event from publisher, it will delivery to all subscriber.
+  - if SNS can't delivery, it'll either go into a dead letter queue which is a temporary failure or drop the message.
+SQS:
+- SQS is a distributed queue
+- You send message into the queue, and when a process/program/service interested to process the message, it pulls out the message from the queue
+- SQS has no concept of timeline
+EventBridge:
+- EventBridge is an eventbus.
+- EventBridge has filter / rules, so for some process interested for certain subtype of events. Eventbridge will only the send the subtype of the event.
+- No timeline / rollback concept.
