@@ -68,21 +68,23 @@ If at any point you find yourself feeling uncertain of your progress and in need
 
 28. <a href="#simple-notification-service-sns"> Simple Notification Service (SNS)</a>
 
-29. <a href="#kinesis"> Kinesis </a>
+29. <a href="#EventBridge"> EventBridge</a>
 
-30. <a href="#lambda"> Lambda </a>
+30. <a href="#kinesis"> Kinesis </a>
 
-31. <a href="#api-gateway"> API Gateway </a>
+31. <a href="#lambda"> Lambda </a>
 
-32. <a href="#cloudformation">CloudFormation </a>
+32. <a href="#api-gateway"> API Gateway </a>
 
-33. <a href="#elasticbeanstalk">ElasticBeanstalk</a>
+33. <a href="#cloudformation">CloudFormation </a>
 
-34. <a href="#aws-machine-learning">AWS machine learning</a>
+34. <a href="#elasticbeanstalk">ElasticBeanstalk</a>
 
-35. <a href="#aws-organizations">AWS Organizations</a>
+35. <a href="#aws-machine-learning">AWS machine learning</a>
 
-36. <a href="#miscellaneous">Miscellaneous</a>
+36. <a href="#aws-organizations">AWS Organizations</a>
+
+37. <a href="#miscellaneous">Miscellaneous</a>
 
 
 
@@ -719,6 +721,8 @@ An elastic network interface is a networking component that represents a virtual
   - When it's running (hot attach)
   - When it's stopped (warm attach)
   - When the instance is being launched (cold attach).
+- Primary network interfaces cannot be detached from an instance, secondary network interfaces can be detached and attached to a different 
+EC2 instance.
 - If an EC2 instance fails with ENI properly configured, you (or more likely,the code running on your behalf) can attach the network interface to a hot standby instance. Because ENI interfaces maintain their own private IP addresses, Elastic IP addresses, and MAC address, network traffic will begin to flow to the standby instance as soon as you attach the network interface on the replacement instance. Users will experience a brief loss of connectivity between the time the instance fails and the time that the network interface is attached to the standby instance, but no changes to the VPC route table or your DNS server are required.
 - For instances that work with Machine Learning and High Performance Computing, use EFA (Elastic Fabric Adaptor). EFAs accelerate the work required from the above use cases. EFA provides lower and more consistent latency and higher throughput than the TCP transport traditionally used in cloud-based High Performance Computing systems. 
 - EFA can also use OS-bypass (on linux only) that will enable ML and HPC applications to interface with the Elastic Fabric Adaptor directly, rather than be normally routed to it through the OS. This gives it a huge performance increase.
@@ -1586,6 +1590,26 @@ Simple Notification Service is a pushed-based messaging service that provides a 
 - There is no long or short polling involved with SNS due to the instantaneous pushing of messages
 - SNS has flexible message delivery over multiple transport protocols and has a simple API.
 
+
+## EventBridge
+
+### EventBridge simpified:
+Amazon EventBridge Event Bus is a serverless event bus that helps you receive, filter, transform, route, and deliver events.
+
+### EventBridge example:
+Scheduling stop and start Amazon EC2 instances with EventBridge scheduler and AWS Lambda: [use Lambda to stop and start Amazon EC2 instances at regular intervals](https://repost.aws/knowledge-center/start-stop-lambda-eventbridge)
+
+This is a simple solution for schedule stop and start EC2 instances. If you want a more advanced solution, use the AWS [Instance Scheduler](https://docs.aws.amazon.com/solutions/latest/instance-scheduler-on-aws/solution-overview.html). It supports stop and start RDS instances and status managment and more dynamic scheduling.
+
+#### Steps
+1. Create a custom AWS Identity and Access Management (IAM) policy and IAM role for your Lambda function. (Descripte instance, stop instance, start instance)
+2. Create Lambda functions to find instance with tag (use descripte instance function, example tag: `Schedule: stop_when_non_office_hour`) and then stop and start your target EC2 instances.
+3. Test your Lambda functions.
+4. Create EventBridge schedules that run your function on a schedule. (AWS Lambda as the target)
+Note: You can also create rules that react to events in your AWS account.
+
+
+
 ## Kinesis 
 
 ### Kinesis Simplified:
@@ -1669,6 +1693,12 @@ AWS Lambda lets you run code without provisioning or managing servers. You pay o
 
 - You'd use Lambda@Edge to simplify and reduce origin infrastructure.
 
+### Lambda environment variables
+When you create or update Lambda functions that use environment variables, AWS Lambda encrypts them using the AWS Key Management Service. When your Lambda function is invoked, those values are decrypted and made available to the Lambda code.
+
+The first time you create or update Lambda functions that use environment variables in a region, a default service key is created for you automatically within AWS KMS. This key is used to encrypt environment variables. However, if you wish to use encryption helpers and use KMS to encrypt environment variables after your Lambda function is created, you must create your own AWS KMS key and choose it instead of the default key. The default key will give errors when chosen. Creating your own key gives you more flexibility, including the ability to create, rotate, disable, and define access controls, and to audit the encryption keys used to protect your data.
+
+In case you dont want other developer that can access the lambda to see the lambda environment variables. You may create a new KMS key and use it to enable encryption helpers that leverage on AWS Key Management Service to store and encrypt the sensitive information. So the others cannot access the key and decrypt it. The encrypted environment variable should use the new created kms key to decrypt and store in the lambda function memory only.
 
 ## API Gateway
 
@@ -2054,3 +2084,11 @@ EventBridge:
 - EventBridge is an eventbus.
 - EventBridge has filter / rules, so for some process interested for certain subtype of events. Eventbridge will only the send the subtype of the event.
 - No timeline / rollback concept.
+
+#### AWS inspector vs AWS Macie vs AWS guardDuty
+Amazon Inspector automatically discovers workloads, such as Amazon EC2 instances, containers, and Lambda functions, and scans them for software vulnerabilities and unintended network exposure.
+
+Amazon Macie is a data security service that uses machine learning (ML) and pattern matching to discover and help protect your sensitive data.
+Mainly for S3 storage
+
+Amazon GuardDuty combines ML and integrated threat intelligence from AWS and leading third parties to help protect your AWS accounts, workloads, and data from threats. Mainly for malicious actions detection
