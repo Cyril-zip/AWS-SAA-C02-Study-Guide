@@ -2,3 +2,5 @@ Writing_later.md
 *.drawio
 *.pcap
 *.png
+scripts/*
+instance_scheduler/**/*

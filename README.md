@@ -713,7 +713,7 @@ An elastic network interface is a networking component that represents a virtual
 - ENI is used mainly for low-budget, high-availability network solutions
 - However, if you suspect you need high network throughput then you can use Enhanced Networking ENI.
 - Enhanced Networking ENI uses single root I/O virtualization to provide high-performance networking capabilities on supported instance types. SR-IOV provides higher I/O and lower throughput and it ensures higher bandwidth, higher packet per second (PPS) performance, and consistently lower inter-instance latencies. SR-IOV does this by dedicating the interface to a single instance and effectively bypassing parts of the Hypervisor which allows for better performance.
-- Adding more ENIs won’t necessarily speed up your network throughput, but Enhanced Networking ENI will.
+- Adding more ENIs won't necessarily speed up your network throughput, but Enhanced Networking ENI will.
 - There is no extra charge for using Enhanced Networking ENI and the better network performance it provides. The only downside is that Enhanced Networking ENI is not available on all EC2 instance families and types.
 - You can attach a network interface to an EC2 instance in the following ways:
   - When it's running (hot attach)
@@ -1415,6 +1415,7 @@ VPC lets you provision a logically isolated section of the AWS cloud where you c
 - When an EC2 instance initiates a connection to the public internet, the request is sent using the public IP as its source even though the instance doesn't know a thing about it. This works because the IGW performs its own NAT translation where private IPs are mapped to public IPs and vice versa for traffic flowing into and out of the VPC. 
 - So when traffic from the internet is destined for an instance's public IP endpoint, the IGW receives it and forwards the traffic onto the EC2 instance using its internal private IP.
 - You can only have one IGW per VPC.
+- There is no cost for IGW.
 - **Summary**: IGW connects *your VPC with the internet*.
 ![](./pic/IGW_NAT.png)
 ![](./pic/igw_traffic_from_internet.png)
